@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flight Management System - Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #111827;
+      --bg-card: #1f2937;
+      --bg-input: #111827;
+      --border: #374151;
+      --border-focus: #6366f1;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.1);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.1);
+      --info: #3b82f6;
+      --info-bg: rgba(59, 130, 246, 0.1);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-content {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      font-size: 1.75rem;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: #fff;
+    }
+
+    .header-tools {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--warning);
+    }
+    .status-dot.online { background: var(--success); }
+    .status-dot.offline { background: var(--danger); }
+
+    .api-config {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .api-config input {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-family: 'JetBrains Mono', monospace;
+      width: 220px;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1280px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius) var(--radius) 0 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tab-btn.active {
+      color: #818cf8;
+      border-bottom-color: #818cf8;
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    /* Tab Content */
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Grid & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1.1rem;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 1rem;
+    }
+    .form-row .form-group { flex: 1; }
+
+    label {
+      display: block;
+      font-size: 0.825rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 0.4rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      padding: 0.6rem 0.8rem;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: border-color 0.15s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    .input-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+    .btn-danger:hover { background: #dc2626; }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: #374151; }
+
+    .btn-sm {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    /* Alerts / Error Boxes */
+    .error-banner {
+      display: none;
+      background: var(--danger-bg);
+      border: 1px solid var(--danger);
+      color: #fca5a5;
+      padding: 0.9rem 1.2rem;
+      border-radius: 6px;
+      margin-bottom: 1.25rem;
+      font-size: 0.875rem;
+      word-break: break-word;
+    }
+
+    .success-banner {
+      display: none;
+      background: var(--success-bg);
+      border: 1px solid var(--success);
+      color: #6ee7b7;
+      padding: 0.9rem 1.2rem;
+      border-radius: 6px;
+      margin-bottom: 1.25rem;
+      font-size: 0.875rem;
+      word-break: break-word;
+    }
+
+    /* Response / Details Viewer */
+    .response-box {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      max-height: 400px;
+      color: #e5e7eb;
+    }
+
+    /* Flight Cards List */
+    .flight-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .flight-card:hover {
+      border-color: #6366f1;
+      transform: translateY(-2px);
+    }
+
+    .flight-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .flight-num {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .route-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #818cf8;
+    }
+
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      background: var(--bg-secondary);
+      padding: 0.75rem;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .inv-col {
+      display: flex;
+      flex-direction: column;
+    }
+    .inv-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .inv-val {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .inv-val.available { color: var(--success); }
+    .inv-val.zero { color: var(--danger); }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .tag-success { background: var(--success-bg); color: var(--success); }
+    .tag-danger { background: var(--danger-bg); color: var(--danger); }
+    .tag-warning { background: var(--warning-bg); color: var(--warning); }
+    .tag-info { background: var(--info-bg); color: var(--info); }
+
+    .role-pills {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+    .pill {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .pill.active {
+      background: #4f46e5;
+      color: white;
+      border-color: #4f46e5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-content">
+      <div class="brand">
+        <span class="brand-icon">🛫</span>
+        <div>
+          <h1 class="brand-title">Flight Management System</h1>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">FastAPI + Neon PostgreSQL Integration</p>
+        </div>
+      </div>
+
+      <div class="header-tools">
+        <div class="api-config">
+          <span>API Base:</span>
+          <input type="text" id="apiBaseInput" value="http://127.0.0.1:8000">
+        </div>
+        <div class="status-badge" id="neonHealthBadge">
+          <div class="status-dot" id="healthDot"></div>
+          <span id="healthText">Checking API...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- Global Navigation Tabs -->
+    <nav class="nav-tabs" aria-label="Flight Navigation">
+      <button class="tab-btn active" onclick="switchTab('search')">🔍 1. Flight Search</button>
+      <button class="tab-btn" onclick="switchTab('booking')">🎫 2. Booking</button>
+      <button class="tab-btn" onclick="switchTab('mybooking')">📋 3. My Booking</button>
+      <button class="tab-btn" onclick="switchTab('waitlist')">⏳ 4. Waitlist</button>
+      <button class="tab-btn" onclick="switchTab('admin')">🛡️ 5. Admin Panel</button>
+    </nav>
+
+    <!-- SCREEN 1: SEARCH SCREEN -->
+    <section id="tab-search" class="tab-panel active">
+      <div class="grid-2">
+        <!-- Search Form Card -->
+        <div class="card">
+          <h2 class="card-title">Search Available Flights</h2>
+          <div class="error-banner" id="searchError"></div>
+
+          <form id="searchForm" onsubmit="handleFlightSearch(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="searchOrigin">Origin (Airport Code)</label>
+                <input type="text" id="searchOrigin" placeholder="e.g. LHE" required maxlength="10" value="LHE">
+              </div>
+              <div class="form-group">
+                <label for="searchDest">Destination (Airport Code)</label>
+                <input type="text" id="searchDest" placeholder="e.g. KHI" required maxlength="10" value="KHI">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="searchDate">Departure Date (Optional)</label>
+                <input type="date" id="searchDate">
+              </div>
+              <div class="form-group">
+                <label for="searchClass">Seat Class Filter</label>
+                <select id="searchClass">
+                  <option value="">Any Class</option>
+                  <option value="ECONOMY">ECONOMY</option>
+                  <option value="BUSINESS">BUSINESS</option>
+                  <option value="FIRST">FIRST</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="searchPassengers">Passengers</label>
+              <input type="number" id="searchPassengers" min="1" max="10" value="1">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="searchSubmitBtn">
+              🔍 Search Flights
+            </button>
+          </form>
+        </div>
+
+        <!-- Search Results Card -->
+        <div class="card">
+          <div class="card-title">
+            <span>Flight Results</span>
+            <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);" id="searchResultCount">0 flights found</span>
+          </div>
+
+          <div id="searchResultsList">
+            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+              Enter an origin and destination to search live flight inventory.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: BOOKING SCREEN -->
+    <section id="tab-booking" class="tab-panel">
+      <div class="grid-2">
+        <div class="card">
+          <h2 class="card-title">
+            <span>Create Flight Booking</span>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="seedDemoPassenger()">
+              👤 Create / Pick Demo Passenger
+            </button>
+          </h2>
+
+          <div class="error-banner" id="bookingError"></div>
+          <div class="success-banner" id="bookingSuccess"></div>
+
+          <form id="bookingForm" onsubmit="handleCreateBooking(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bookFlightId">Flight ID</label>
+                <input type="number" id="bookFlightId" required placeholder="e.g. 1">
+              </div>
+              <div class="form-group">
+                <label for="bookPassengerId">Passenger ID</label>
+                <input type="number" id="bookPassengerId" required placeholder="e.g. 1" value="1">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bookSeatClass">Seat Class</label>
+                <select id="bookSeatClass" required>
+                  <option value="ECONOMY">ECONOMY</option>
+                  <option value="BUSINESS">BUSINESS</option>
+                  <option value="FIRST">FIRST</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="bookSeats">Quantity (Seats)</label>
+                <input type="number" id="bookSeats" min="1" max="10" value="1" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bookFareType">Fare Type</label>
+                <select id="bookFareType" required>
+                  <option value="STANDARD">STANDARD (Non-refundable, Change w/ Fee)</option>
+                  <option value="FLEXIBLE">FLEXIBLE (Fully Refundable)</option>
+                  <option value="BASIC_ECONOMY">BASIC_ECONOMY (Strictly Non-refundable)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="bookAmount">Total Amount ($)</label>
+                <input type="number" id="bookAmount" step="0.01" min="1" value="150.00" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="bookIdempotencyKey">
+                Idempotency Key (Client-Generated UUID)
+              </label>
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="bookIdempotencyKey" readonly style="font-family: monospace;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="generateIdempotencyKey()" title="Generate New UUID">
+                  🔄 New
+                </button>
+              </div>
+              <p class="input-hint">Keep the same key and click "Retry Submission" to test duplicate request protection.</p>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+              <button type="submit" class="btn btn-primary" style="flex: 2;">
+                ✅ Submit Booking
+              </button>
+              <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="handleRetryBooking()" title="Re-send exactly the same payload & key">
+                🔁 Retry Same Key
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Booking Result Display -->
+        <div class="card">
+          <h2 class="card-title">Booking Confirmation & Details</h2>
+          <div id="bookingResultDisplay">
+            <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+              Submit a booking to view confirmation details and inventory decrement.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: MY BOOKING SCREEN -->
+    <section id="tab-mybooking" class="tab-panel">
+      <div class="grid-2">
+        <div class="card">
+          <h2 class="card-title">Manage Existing Booking</h2>
+          <div class="error-banner" id="myBookingError"></div>
+          <div class="success-banner" id="myBookingSuccess"></div>
+
+          <form id="myBookingLookupForm" onsubmit="handleLookupBooking(event)">
+            <div class="form-group">
+              <label for="lookupBookingId">Enter Booking ID</label>
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="number" id="lookupBookingId" required placeholder="e.g. 1">
+                <button type="submit" class="btn btn-primary">
+                  🔍 Lookup
+                </button>
+              </div>
+              <p class="input-hint">Retrieve status, flight details, and test cancellation/refund policy.</p>
+            </div>
+          </form>
+
+          <div id="cancelActionSection" style="margin-top: 1.5rem; display: none;">
+            <div style="padding: 1rem; background: var(--bg-card); border-radius: 6px; border: 1px solid var(--border);">
+              <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: #fff;">Cancel This Booking</h3>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Invokes <code>POST /api/bookings/{id}/cancel</code>. Evaluates fare policy, applies schedule-change override if applicable, and restores seat inventory.
+              </p>
+              <button type="button" class="btn btn-danger" onclick="handleCancelBooking()">
+                ❌ Cancel Booking & Request Refund
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Booking Details Card -->
+        <div class="card">
+          <h2 class="card-title">Booking Record</h2>
+          <div id="myBookingDetails">
+            <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+              Enter a Booking ID to fetch booking status.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: WAITLIST SCREEN -->
+    <section id="tab-waitlist" class="tab-panel">
+      <div class="grid-2">
+        <!-- Join Waitlist Form -->
+        <div class="card">
+          <h2 class="card-title">Join Flight Waitlist</h2>
+          <div class="error-banner" id="waitlistError"></div>
+          <div class="success-banner" id="waitlistSuccess"></div>
+
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+            Note: The backend enforces that you can only join the waitlist if available seats in the selected class are 0.
+          </p>
+
+          <form id="joinWaitlistForm" onsubmit="handleJoinWaitlist(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="waitlistFlightId">Flight ID</label>
+                <input type="number" id="waitlistFlightId" required placeholder="e.g. 1">
+              </div>
+              <div class="form-group">
+                <label for="waitlistPassengerId">Passenger ID</label>
+                <input type="number" id="waitlistPassengerId" required placeholder="e.g. 1" value="1">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="waitlistClass">Seat Class</label>
+                <select id="waitlistClass" required>
+                  <option value="ECONOMY">ECONOMY</option>
+                  <option value="BUSINESS">BUSINESS</option>
+                  <option value="FIRST">FIRST</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="waitlistPriority">Priority</label>
+                <input type="number" id="waitlistPriority" min="1" value="1" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              ⏳ Join Waitlist
+            </button>
+          </form>
+        </div>
+
+        <!-- View Waitlist Card -->
+        <div class="card">
+          <div class="card-title">
+            <span>Flight Waitlist Queue</span>
+          </div>
+
+          <form id="viewWaitlistForm" onsubmit="handleViewWaitlist(event)" style="margin-bottom: 1rem;">
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="number" id="viewWaitlistFlightId" required placeholder="Enter Flight ID (e.g. 1)">
+              <button type="submit" class="btn btn-secondary">
+                Fetch Queue
+              </button>
+            </div>
+          </form>
+
+          <div id="waitlistQueueList">
+            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+              Enter Flight ID above to inspect waitlist queue.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 5: ADMIN SCREEN -->
+    <section id="tab-admin" class="tab-panel">
+      <!-- Admin Role Config Banner -->
+      <div class="card" style="margin-bottom: 1.5rem; background: #131b2e; border-color: #3b82f6;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="font-size: 1rem; color: #93c5fd; font-weight: 600;">Admin Role Authentication Header</h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">
+              Header <code>X-Admin-Role</code> sent with all admin API mutations. Use pills to toggle role tiers.
+            </p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <input type="text" id="adminRoleInput" value="super-admin" style="width: 140px; font-family: monospace; font-weight: bold; text-align: center;">
+            <div class="role-pills">
+              <span class="pill active" onclick="setAdminRole('super-admin')">super-admin</span>
+              <span class="pill" onclick="setAdminRole('ops-agent')">ops-agent</span>
+              <span class="pill" onclick="setAdminRole('unauthorized')">invalid</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="error-banner" id="adminError"></div>
+      <div class="success-banner" id="adminSuccess"></div>
+
+      <div class="grid-2">
+        <!-- Create Flight Form -->
+        <div class="card">
+          <h2 class="card-title">1. Create New Flight (Admin)</h2>
+          <form id="createFlightForm" onsubmit="handleCreateFlight(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="adminFlightNum">Flight Number</label>
+                <input type="text" id="adminFlightNum" placeholder="e.g. PK-808" required value="PK-808">
+              </div>
+              <div class="form-group">
+                <label for="adminOrigin">Origin</label>
+                <input type="text" id="adminOrigin" placeholder="e.g. LHE" required value="LHE">
+              </div>
+              <div class="form-group">
+                <label for="adminDest">Destination</label>
+                <input type="text" id="adminDest" placeholder="e.g. KHI" required value="KHI">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="adminDepTime">Departure Time</label>
+                <input type="datetime-local" id="adminDepTime" required>
+              </div>
+              <div class="form-group">
+                <label for="adminArrTime">Arrival Time</label>
+                <input type="datetime-local" id="adminArrTime" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="adminTotalSeats">Total Seats</label>
+                <input type="number" id="adminTotalSeats" required value="100" readonly style="background: var(--bg-primary);">
+              </div>
+              <div class="form-group">
+                <label for="adminFirstSeats">First</label>
+                <input type="number" id="adminFirstSeats" min="0" value="10" oninput="calcTotalSeats()">
+              </div>
+              <div class="form-group">
+                <label for="adminBizSeats">Business</label>
+                <input type="number" id="adminBizSeats" min="0" value="20" oninput="calcTotalSeats()">
+              </div>
+              <div class="form-group">
+                <label for="adminEconSeats">Economy</label>
+                <input type="number" id="adminEconSeats" min="0" value="70" oninput="calcTotalSeats()">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              ✈️ Create Flight (POST /api/admin/flights)
+            </button>
+          </form>
+        </div>
+
+        <!-- Edit Flight Form -->
+        <div class="card">
+          <h2 class="card-title">2. Edit Flight Schedule (Admin)</h2>
+          <form id="editFlightForm" onsubmit="handleEditFlight(event)">
+            <div class="form-group">
+              <label for="editFlightId">Flight ID to Edit</label>
+              <input type="number" id="editFlightId" required placeholder="e.g. 1">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editDepTime">New Departure Time</label>
+                <input type="datetime-local" id="editDepTime">
+              </div>
+              <div class="form-group">
+                <label for="editArrTime">New Arrival Time</label>
+                <input type="datetime-local" id="editArrTime">
+              </div>
+            </div>
+
+            <p class="input-hint" style="margin-bottom: 1rem;">
+              Shifting departure time by ≥ 60 minutes automatically triggers <code>schedule_change_override = true</code> on active bookings!
+            </p>
+
+            <button type="submit" class="btn btn-secondary btn-block">
+              📝 Update Flight (PATCH /api/admin/flights/{id})
+            </button>
+          </form>
+
+          <hr style="border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0;">
+
+          <!-- Cancel Flight Form -->
+          <h2 class="card-title" style="color: #fca5a5;">3. Cancel Entire Flight (Cascade)</h2>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Only authorized for <code>super-admin</code>. Cascades all active bookings to <code>CANCELLED_REFUNDED</code>.
+          </p>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="number" id="cancelFlightId" placeholder="Flight ID to Cancel">
+            <button type="button" class="btn btn-danger" onclick="handleAdminCancelFlight()">
+              💥 Cancel Flight
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audit Logs Viewer -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-title">
+          <span>Recent Neon Audit Trail (System Verification)</span>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="fetchAuditLogs()">
+            🔄 Refresh Audit Logs
+          </button>
+        </div>
+        <div class="table-wrapper">
+          <table id="auditLogsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Entity</th>
+                <th>Entity ID</th>
+                <th>Action</th>
+                <th>Actor</th>
+                <th>Details</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="auditLogsBody">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-muted);">
+                  Click "Refresh Audit Logs" to load recent audit trail from Neon.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Centralized Base URL Config
+    const API_BASE_INPUT = document.getElementById('apiBaseInput');
+    function getApiBase() {
+      return API_BASE_INPUT.value.trim().replace(/\/+$/, '');
+    }
+
+    // Auto-populate default dates
+    window.addEventListener('DOMContentLoaded', () => {
+      checkHealth();
+      generateIdempotencyKey();
+      initDefaultFlightTimes();
+    });
+
+    function initDefaultFlightTimes() {
+      const now = new Date();
+      const dep = new Date(now.getTime() + 24 * 60 * 60 * 1000); // tomorrow
+      const arr = new Date(dep.getTime() + 2.5 * 60 * 60 * 1000); // 2.5 hours later
+
+      const formatDT = (d) => d.toISOString().slice(0, 16);
+      const depElem = document.getElementById('adminDepTime');
+      const arrElem = document.getElementById('adminArrTime');
+      if (depElem) depElem.value = formatDT(dep);
+      if (arrElem) arrElem.value = formatDT(arr);
+
+      const searchDate = document.getElementById('searchDate');
+      if (searchDate) searchDate.value = dep.toISOString().slice(0, 10);
+    }
+
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+      const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (targetBtn) targetBtn.classList.add('active');
+
+      const targetPanel = document.getElementById(`tab-${tabId}`);
+      if (targetPanel) targetPanel.classList.add('active');
+    }
+
+    // Role helper
+    function setAdminRole(role) {
+      document.getElementById('adminRoleInput').value = role;
+      document.querySelectorAll('.role-pills .pill').forEach(p => {
+        p.classList.toggle('active', p.innerText === role);
+      });
+    }
+
+    function calcTotalSeats() {
+      const first = parseInt(document.getElementById('adminFirstSeats').value) || 0;
+      const biz = parseInt(document.getElementById('adminBizSeats').value) || 0;
+      const econ = parseInt(document.getElementById('adminEconSeats').value) || 0;
+      document.getElementById('adminTotalSeats').value = first + biz + econ;
+    }
+
+    // Health check
+    async function checkHealth() {
+      const badge = document.getElementById('neonHealthBadge');
+      const dot = document.getElementById('healthDot');
+      const text = document.getElementById('healthText');
+
+      try {
+        const res = await fetch(`${getApiBase()}/health`);
+        if (res.ok) {
+          const data = await res.json();
+          dot.className = 'status-dot online';
+          text.innerText = `Neon Connected (${data.status})`;
+        } else {
+          dot.className = 'status-dot offline';
+          text.innerText = `API Status: ${res.status}`;
+        }
+      } catch (err) {
+        dot.className = 'status-dot offline';
+        text.innerText = 'API Offline';
+      }
+    }
+
+    // Client-side UUID generator
+    function generateIdempotencyKey() {
+      const key = (typeof crypto.randomUUID === 'function') ? crypto.randomUUID() : 'idem-' + Math.random().toString(36).substring(2, 15);
+      const input = document.getElementById('bookIdempotencyKey');
+      if (input) input.value = key;
+    }
+
+    // Helper: Show banner errors
+    function showError(elemId, msg) {
+      const elem = document.getElementById(elemId);
+      if (!elem) return;
+      elem.innerText = typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2);
+      elem.style.display = 'block';
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.error-banner, .success-banner').forEach(e => {
+        e.style.display = 'none';
+        e.innerText = '';
+      });
+    }
+
+    function showSuccess(elemId, msg) {
+      const elem = document.getElementById(elemId);
+      if (!elem) return;
+      elem.innerText = typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2);
+      elem.style.display = 'block';
+    }
+
+    // Format raw error response
+    async function parseApiError(res) {
+      try {
+        const data = await res.json();
+        if (data.detail) {
+          if (Array.isArray(data.detail)) {
+            return data.detail.map(d => `${d.loc ? d.loc.join('.') + ': ' : ''}${d.msg}`).join(' | ');
+          }
+          return data.detail;
+        }
+        return JSON.stringify(data);
+      } catch {
+        return `Request failed with HTTP status ${res.status} (${res.statusText})`;
+      }
+    }
+
+    // 1. FLIGHT SEARCH
+    async function handleFlightSearch(event) {
+      if (event) event.preventDefault();
+      clearErrors();
+
+      const origin = document.getElementById('searchOrigin').value.trim();
+      const dest = document.getElementById('searchDest').value.trim();
+      const date = document.getElementById('searchDate').value;
+      const seatCls = document.getElementById('searchClass').value;
+      const pax = document.getElementById('searchPassengers').value;
+
+      const params = new URLSearchParams({
+        origin: origin,
+        destination: dest,
+        passengers: pax
+      });
+      if (date) params.append('departure_date', date);
+      if (seatCls) params.append('seat_class', seatCls);
+
+      const listElem = document.getElementById('searchResultsList');
+      const countElem = document.getElementById('searchResultCount');
+      listElem.innerHTML = '<div style="text-align: center; padding: 2rem;">Searching live flights...</div>';
+
+      try {
+        const res = await fetch(`${getApiBase()}/api/search/flights?${params.toString()}`);
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          showError('searchError', err);
+          listElem.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 1.5rem;">Error: ${err}</div>`;
+          countElem.innerText = '0 flights';
+          return;
+        }
+
+        const flights = await res.json();
+        countElem.innerText = `${flights.length} flight(s) available`;
+
+        if (flights.length === 0) {
+          listElem.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">No flights found matching your route and date criteria.</div>';
+          return;
+        }
+
+        listElem.innerHTML = flights.map(f => `
+          <div class="flight-card">
+            <div class="flight-header">
+              <div>
+                <span class="flight-num">${f.flight_number}</span>
+                <span class="tag tag-info" style="margin-left: 0.5rem;">${f.status}</span>
+              </div>
+              <div class="route-badge">
+                ${f.origin} ✈ ${f.destination}
+              </div>
+            </div>
+
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">
+              Dep: <strong>${new Date(f.departure_time).toLocaleString()}</strong> |
+              Arr: <strong>${new Date(f.arrival_time).toLocaleString()}</strong>
+            </div>
+
+            <div class="inventory-grid">
+              <div class="inv-col">
+                <span class="inv-label">Economy</span>
+                <span class="inv-val ${f.available_economy > 0 ? 'available' : 'zero'}">${f.available_economy}</span>
+              </div>
+              <div class="inv-col">
+                <span class="inv-label">Business</span>
+                <span class="inv-val ${f.available_business > 0 ? 'available' : 'zero'}">${f.available_business}</span>
+              </div>
+              <div class="inv-col">
+                <span class="inv-label">First</span>
+                <span class="inv-val ${f.available_first > 0 ? 'available' : 'zero'}">${f.available_first}</span>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
+              <span style="font-size: 0.75rem; color: var(--text-muted);">ID: #${f.id} | Total: ${f.total_seats}</span>
+              <button type="button" class="btn btn-primary btn-sm" onclick="selectFlightForBooking(${f.id}, '${f.available_economy > 0 ? 'ECONOMY' : (f.available_business > 0 ? 'BUSINESS' : 'FIRST')}')">
+                Book This Flight →
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        showError('searchError', `Network / API Error: ${err.message}`);
+        listElem.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 1.5rem;">Network Error: ${err.message}</div>`;
+      }
+    }
+
+    function selectFlightForBooking(flightId, seatClass) {
+      document.getElementById('bookFlightId').value = flightId;
+      document.getElementById('bookSeatClass').value = seatClass;
+      switchTab('booking');
+    }
+
+    // 2. DEMO PASSENGER HELPER
+    async function seedDemoPassenger() {
+      clearErrors();
+      try {
+        const email = `guest_${Math.floor(Math.random() * 100000)}@test.com`;
+        const res = await fetch(`${getApiBase()}/api/passengers/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Demo Passenger',
+            email: email,
+            phone: '+1-555-0199'
+          })
+        });
+
+        if (res.ok) {
+          const p = await res.json();
+          document.getElementById('bookPassengerId').value = p.id;
+          document.getElementById('waitlistPassengerId').value = p.id;
+          showSuccess('bookingSuccess', `Created & Selected Passenger ID: ${p.id} (${p.email})`);
+        } else {
+          // If already exists or error, fetch existing passengers
+          const listRes = await fetch(`${getApiBase()}/api/passengers/`);
+          if (listRes.ok) {
+            const list = await listRes.json();
+            if (list.length > 0) {
+              document.getElementById('bookPassengerId').value = list[0].id;
+              document.getElementById('waitlistPassengerId').value = list[0].id;
+              showSuccess('bookingSuccess', `Selected Existing Passenger ID: ${list[0].id} (${list[0].email})`);
+            }
+          }
+        }
+      } catch (err) {
+        showError('bookingError', `Failed to seed passenger: ${err.message}`);
+      }
+    }
+
+    // Last booking payload cache for testing retry
+    let lastBookingPayload = null;
+    let lastBookingKey = null;
+
+    // 2. CREATE BOOKING
+    async function handleCreateBooking(event) {
+      if (event) event.preventDefault();
+      clearErrors();
+
+      const flightId = parseInt(document.getElementById('bookFlightId').value);
+      const passengerId = parseInt(document.getElementById('bookPassengerId').value);
+      const seatClass = document.getElementById('bookSeatClass').value;
+      const seats = parseInt(document.getElementById('bookSeats').value);
+      const fareType = document.getElementById('bookFareType').value;
+      const amount = parseFloat(document.getElementById('bookAmount').value);
+      const idemKey = document.getElementById('bookIdempotencyKey').value.trim();
+
+      const payload = {
+        flight_id: flightId,
+        passenger_id: passengerId,
+        seat_class: seatClass,
+        seats: seats,
+        fare_type: fareType,
+        amount: amount,
+        idempotency_key: idemKey
+      };
+
+      lastBookingPayload = payload;
+      lastBookingKey = idemKey;
+
+      executeBookingCall(payload, idemKey);
+    }
+
+    function handleRetryBooking() {
+      clearErrors();
+      if (!lastBookingPayload || !lastBookingKey) {
+        showError('bookingError', 'No prior booking submission found to retry! Submit a booking first.');
+        return;
+      }
+      showSuccess('bookingSuccess', `Retrying same booking submission with same Idempotency-Key: ${lastBookingKey}`);
+      executeBookingCall(lastBookingPayload, lastBookingKey);
+    }
+
+    async function executeBookingCall(payload, idempotencyKey) {
+      const displayElem = document.getElementById('bookingResultDisplay');
+      displayElem.innerHTML = '<div style="text-align: center; padding: 2rem;">Processing transactional reservation...</div>';
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (idempotencyKey) {
+          headers['Idempotency-Key'] = idempotencyKey;
+        }
+
+        const res = await fetch(`${getApiBase()}/api/bookings/`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          showError('bookingError', err);
+          displayElem.innerHTML = `
+            <div style="background: var(--danger-bg); border: 1px solid var(--danger); padding: 1rem; border-radius: 6px; color: #fca5a5;">
+              <strong>Booking Failed</strong><br>
+              ${err}
+            </div>
+          `;
+          return;
+        }
+
+        const booking = await res.json();
+        showSuccess('bookingSuccess', `Booking processed successfully! Reference: ${booking.booking_reference}`);
+
+        displayElem.innerHTML = `
+          <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.25rem; border-radius: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <span style="font-size: 1.1rem; font-weight: 700; color: #fff;">${booking.booking_reference}</span>
+              <span class="tag tag-success">${booking.status}</span>
+            </div>
+
+            <table style="margin-bottom: 1rem;">
+              <tr><th>Booking ID</th><td>#${booking.id}</td></tr>
+              <tr><th>Flight ID</th><td>${booking.flight_id}</td></tr>
+              <tr><th>Passenger ID</th><td>${booking.passenger_id}</td></tr>
+              <tr><th>Seat Class</th><td><strong>${booking.seat_class}</strong></td></tr>
+              <tr><th>Seats Reserved</th><td>${booking.seats}</td></tr>
+              <tr><th>Fare Type</th><td>${booking.fare_type}</td></tr>
+              <tr><th>Total Paid</th><td>$${Number(booking.amount).toFixed(2)}</td></tr>
+              <tr><th>Schedule Override</th><td>${booking.schedule_change_override ? '⚠️ YES' : 'No'}</td></tr>
+              <tr><th>Created At</th><td>${new Date(booking.created_at).toLocaleString()}</td></tr>
+            </table>
+
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-secondary btn-sm" onclick="goToMyBooking(${booking.id})">
+                📋 View in 'My Booking' →
+              </button>
+            </div>
+          </div>
+        `;
+
+        // Pre-fill mybooking lookup
+        document.getElementById('lookupBookingId').value = booking.id;
+
+      } catch (err) {
+        showError('bookingError', `Network Error: ${err.message}`);
+        displayElem.innerHTML = `<div style="color: var(--danger); padding: 1rem;">Network Error: ${err.message}</div>`;
+      }
+    }
+
+    function goToMyBooking(id) {
+      document.getElementById('lookupBookingId').value = id;
+      switchTab('mybooking');
+      handleLookupBooking();
+    }
+
+    // 3. MY BOOKING LOOKUP & CANCEL
+    let currentLoadedBooking = null;
+
+    async function handleLookupBooking(event) {
+      if (event) event.preventDefault();
+      clearErrors();
+
+      const bookingId = document.getElementById('lookupBookingId').value;
+      if (!bookingId) return;
+
+      const detailsElem = document.getElementById('myBookingDetails');
+      const cancelSection = document.getElementById('cancelActionSection');
+      detailsElem.innerHTML = '<div style="text-align: center; padding: 2rem;">Fetching booking...</div>';
+      cancelSection.style.display = 'none';
+
+      try {
+        const res = await fetch(`${getApiBase()}/api/bookings/${bookingId}`);
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          showError('myBookingError', err);
+          detailsElem.innerHTML = `<div style="color: var(--danger); padding: 1rem;">${err}</div>`;
+          return;
+        }
+
+        const b = await res.json();
+        currentLoadedBooking = b;
+
+        const isCancelled = b.status && b.status.startsWith('CANCELLED');
+
+        detailsElem.innerHTML = `
+          <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.25rem; border-radius: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <span style="font-size: 1.1rem; font-weight: 700; color: #fff;">Ref: ${b.booking_reference}</span>
+              <span class="tag ${isCancelled ? 'tag-danger' : 'tag-success'}">${b.status}</span>
+            </div>
+
+            <table>
+              <tr><th>Booking ID</th><td>#${b.id}</td></tr>
+              <tr><th>Flight ID</th><td>#${b.flight_id}</td></tr>
+              <tr><th>Passenger ID</th><td>#${b.passenger_id}</td></tr>
+              <tr><th>Class / Seats</th><td>${b.seat_class} (${b.seats} seat(s))</td></tr>
+              <tr><th>Fare Type</th><td>${b.fare_type}</td></tr>
+              <tr><th>Amount</th><td>$${Number(b.amount).toFixed(2)}</td></tr>
+              <tr><th>Schedule Override</th><td>${b.schedule_change_override ? '⚠️ Active (Full refund eligible)' : 'None'}</td></tr>
+              <tr><th>Created</th><td>${new Date(b.created_at).toLocaleString()}</td></tr>
+            </table>
+          </div>
+        `;
+
+        if (!isCancelled) {
+          cancelSection.style.display = 'block';
+        }
+
+      } catch (err) {
+        showError('myBookingError', `Network Error: ${err.message}`);
+      }
+    }
+
+    async function handleCancelBooking() {
+      clearErrors();
+      if (!currentLoadedBooking) return;
+
+      const id = currentLoadedBooking.id;
+      if (!confirm(`Are you sure you want to cancel booking #${id}?`)) return;
+
+      try {
+        const res = await fetch(`${getApiBase()}/api/bookings/${id}/cancel`, {
+          method: 'POST'
+        });
+
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          showError('myBookingError', err);
+          return;
+        }
+
+        const cancelData = await res.json();
+        showSuccess('myBookingSuccess', `Cancellation processed! Status: ${cancelData.status}. ${cancelData.message}`);
+        handleLookupBooking(); // refresh details
+
+      } catch (err) {
+        showError('myBookingError', `Network Error: ${err.message}`);
+      }
+    }
+
+    // 4. WAITLIST
+    async function handleJoinWaitlist(event) {
+      if (event) event.preventDefault();
+      clearErrors();
+
+      const flightId = parseInt(document.getElementById('waitlistFlightId').value);
+      const passengerId = parseInt(document.getElementById('waitlistPassengerId').value);
+      const seatClass = document.getElementById('waitlistClass').value;
+      const priority = parseInt(document.getElementById('waitlistPriority').value);
+
+      try {
+        const res = await fetch(`${getApiBase()}/api/waitlist/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            flight_id: flightId,
+            passenger_id: passengerId,
+            seat_class: seatClass,
+            priority: priority
+          })
+        });
+
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          showError('waitlistError', err);
+          return;
+        }
+
+        const waitlistEntry = await res.json();
+        showSuccess('waitlistSuccess', `Successfully joined waitlist! Entry ID #${waitlistEntry.id}, Priority: ${waitlistEntry.priority}`);
+
+        // Pre-fill queue view
+        document.getElementById('viewWaitlistFlightId').value = flightId;
+        handleViewWaitlist();
+
+      } catch (err) {
+        showError('waitlistError', `Network Error: ${err.message}`);
+      }
+    }
+
+    async function handleViewWaitlist(event) {
+      if (event) event.preventDefault();
+      clearErrors();
+
+      const flightId = document.getElementById('viewWaitlistFlightId').value;
+      if (!flightId) return;
+
+      const listElem = document.getElementById('waitlistQueueList');
+      listElem.innerHTML = '<div style="text-align: center; padding: 2rem;">Loading waitlist queue...</div>';
+
+      try {
+        const res = await fetch(`${getApiBase()}/api/waitlist/${flightId}`);
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          listElem.innerHTML = `<div style="color: var(--danger); padding: 1rem;">${err}</div>`;
+          return;
+        }
+
+        const list = await res.json();
+        if (list.length === 0) {
+          listElem.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">No waitlist entries found for Flight #' + flightId + '.</div>';
+          return;
+        }
+
+        listElem.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Queue #</th>
+                <th>Waitlist ID</th>
+                <th>Passenger ID</th>
+                <th>Class</th>
+                <th>Priority</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map((entry, idx) => `
+                <tr>
+                  <td><strong>#${idx + 1}</strong></td>
+                  <td>#${entry.id}</td>
+                  <td>#${entry.passenger_id}</td>
+                  <td><span class="tag tag-info">${entry.seat_class}</span></td>
+                  <td>${entry.priority}</td>
+                  <td><span class="tag tag-warning">${entry.status}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+
+      } catch (err) {
+        listElem.innerHTML = `<div style="color: var(--danger); padding: 1rem;">Network Error: ${err.message}</div>`;
+      }
+    }
+
+    // 5. ADMIN ACTIONS
+    function getAdminHeaders() {
+      const role = document.getElementById('adminRoleInput').value.trim();
+      const headers = { 'Content-Type': 'application/json' };
+      if (role) {
+        headers['X-Admin-Role'] = role;
+      }
+      return headers;
+    }
+
+    async function handleCreateFlight(event) {
+      if (event) event.preventDefault();
+      clearErrors();
+
+      const depVal = document.getElementById('adminDepTime').value;
+      const arrVal = document.getElementById('adminArrTime').value;
+
+      const payload = {
+        flight_number: document.getElementById('adminFlightNum').value.trim().toUpperCase(),
+        origin: document.getElementById('adminOrigin').value.trim().toUpperCase(),
+        destination: document.getElementById('adminDest').value.trim().toUpperCase(),
+        departure_time: new Date(depVal).toISOString(),
+        arrival_time: new Date(arrVal).toISOString(),
+        total_seats: parseInt(document.getElementById('adminTotalSeats').value),
+        first_seats: parseInt(document.getElementById('adminFirstSeats').value) || 0,
+        business_seats: parseInt(document.getElementById('adminBizSeats').value) || 0,
+        economy_seats: parseInt(document.getElementById('adminEconSeats').value) || 0
+      };
+
+      try {
+        const res = await fetch(`${getApiBase()}/api/admin/flights`, {
+          method: 'POST',
+          headers: getAdminHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          showError('adminError', `Create Flight Failed: ${err}`);
+          return;
+        }
+
+        const flight = await res.json();
+        showSuccess('adminSuccess', `Flight ${flight.flight_number} (ID: ${flight.id}) created successfully!`);
+        document.getElementById('editFlightId').value = flight.id;
+        document.getElementById('cancelFlightId').value = flight.id;
+        fetchAuditLogs();
+
+      } catch (err) {
+        showError('adminError', `Network Error: ${err.message}`);
+      }
+    }
+
+    async function handleEditFlight(event) {
+      if (event) event.preventDefault();
+      clearErrors();
+
+      const flightId = document.getElementById('editFlightId').value;
+      if (!flightId) return;
+
+      const payload = {};
+      const dep = document.getElementById('editDepTime').value;
+      const arr = document.getElementById('editArrTime').value;
+
+      if (dep) payload.departure_time = new Date(dep).toISOString();
+      if (arr) payload.arrival_time = new Date(arr).toISOString();
+
+      try {
+        const res = await fetch(`${getApiBase()}/api/admin/flights/${flightId}`, {
+          method: 'PATCH',
+          headers: getAdminHeaders(),
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          showError('adminError', `Edit Flight Failed: ${err}`);
+          return;
+        }
+
+        const updated = await res.json();
+        showSuccess('adminSuccess', `Flight #${updated.id} (${updated.flight_number}) updated! Active Bookings Affected: ${updated.active_bookings_affected}`);
+        fetchAuditLogs();
+
+      } catch (err) {
+        showError('adminError', `Network Error: ${err.message}`);
+      }
+    }
+
+    async function handleAdminCancelFlight() {
+      clearErrors();
+      const flightId = document.getElementById('cancelFlightId').value;
+      if (!flightId) {
+        showError('adminError', 'Please enter a Flight ID to cancel.');
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to cancel entire flight #${flightId}? This cascades full refunds to all bookings.`)) return;
+
+      try {
+        const res = await fetch(`${getApiBase()}/api/admin/flights/${flightId}/cancel`, {
+          method: 'POST',
+          headers: getAdminHeaders()
+        });
+
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          showError('adminError', `Cancel Flight Failed: ${err}`);
+          return;
+        }
+
+        const cancelRes = await res.json();
+        showSuccess('adminSuccess', `Flight #${cancelRes.flight_id} Cancelled. Cascaded Bookings: ${cancelRes.cascaded_bookings_count}. Message: ${cancelRes.message}`);
+        fetchAuditLogs();
+
+      } catch (err) {
+        showError('adminError', `Network Error: ${err.message}`);
+      }
+    }
+
+    async function fetchAuditLogs() {
+      const tbody = document.getElementById('auditLogsBody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Loading Neon audit trail...</td></tr>';
+
+      try {
+        const res = await fetch(`${getApiBase()}/api/admin/audit-logs`, {
+          headers: getAdminHeaders()
+        });
+
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          tbody.innerHTML = `<tr><td colspan="7" style="color: var(--danger); text-align: center;">${err}</td></tr>`;
+          return;
+        }
+
+        const logs = await res.json();
+        if (logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No audit logs recorded yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = logs.map(l => `
+          <tr>
+            <td>#${l.id}</td>
+            <td><span class="tag tag-info">${l.entity_type}</span></td>
+            <td>#${l.entity_id}</td>
+            <td><strong>${l.action}</strong></td>
+            <td><span class="tag tag-warning">${l.actor}</span></td>
+            <td style="max-width: 300px; font-size: 0.75rem; color: var(--text-secondary);">${l.details}</td>
+            <td style="font-size: 0.75rem; color: var(--text-muted);">${new Date(l.created_at).toLocaleString()}</td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="color: var(--danger); text-align: center;">Network Error: ${err.message}</td></tr>`;
+      }
+    }
+  </script>
+</body>
+</html>
